@@ -9,7 +9,6 @@ import { BiDotsHorizontalRounded } from 'react-icons/bi'
 import { AiOutlinePlus } from 'react-icons/ai'
 
 //Dependencies
-import axios from 'axios'
 import { useState, useContext } from 'react'
 import { PredictionContext } from '../context/PredictionContext'
 
