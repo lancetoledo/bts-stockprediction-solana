@@ -1,55 +1,112 @@
 //Components
-import Header from '../components/Header'
-import PortfolioChart from '../components/PortfolioChart'
-import Asset from '../components/Asset'
-
+import Header from "../components/Header";
+import PortfolioChart from "../components/PortfolioChart";
+import Asset from "../components/Asset";
 
 //Icons
-import { BiDotsHorizontalRounded } from 'react-icons/bi'
-import { AiOutlinePlus } from 'react-icons/ai'
-
+import { BiDotsHorizontalRounded } from "react-icons/bi";
+import { AiOutlinePlus } from "react-icons/ai";
+import { BsPlusLg } from "react-icons/bs";
+import { IoMdArrowDropdown } from "react-icons/io";
+import Modal from "react-modal";
 //Dependencies
-import { useState, useContext } from 'react'
-import { PredictionContext } from '../context/PredictionContext'
-
+import { useState, useContext, useEffect } from "react";
+import { PredictionContext } from "../context/PredictionContext";
+import { STOCKDATA, CRYPTODATA } from "../data/asset.seed";
+import DropDown from "../components/DropDown";
+import AvailableBets from "../components/AvailableBets";
+import CustomModal from "../components/CustomModal";
 //Styles
 const styles = {
-  wrapper: 'w-screen h-screen flex flex-col',
-  mainContainer: 'w-2/3 h-full m-auto flex mt-16',
-  leftMain: 'flex flex-col w-3/4 h-full  p-6 overflow-y-scroll',
-  portfolioAmountContainer: 'flex flex-col ',
-  portfolioAmount: 'text-white text-4xl',
-  portfolioPercent: 'text-white font-bold text-sm',
-  pastHour: 'text-gray-400',
+  wrapper: "w-screen h-screen flex flex-col",
+  mainContainer: "w-2/3 h-full m-auto flex mt-16",
+  leftMain: "flex flex-col w-3/4 h-full  p-6 overflow-y-scroll",
+  portfolioAmountContainer: "flex flex-col ",
+  portfolioAmount: "text-white text-4xl",
+  portfolioPercent: "text-white font-bold text-sm",
+  pastHour: "text-gray-400",
   chartContainer:
-    'text-5xl flex justify-center w-full h-1/3 text-white mt-11 mb-11',
+    "text-5xl flex justify-center w-full h-1/3 text-white mt-11 mb-11",
   buyingPowerContainer:
-    'w-full border-t mb-24 border-b h-16 border-[#30363b] flex justify-between items-center p-4',
-  buyingPowerTitle: 'text-white font-bolder text-lg',
-  buyingPowerAmount: 'text-white font-bolder text-xl',
-  notice: 'flex border border-[#30363b] mx-11 my-4 p-5 flex-col flex-1',
-  noticeContainer: 'flex-1',
-  noticeTitle: 'text-gray-500',
-  noticeMessage: 'text-white font-bold',
-  noticeCTA: 'font-bold text-green-500 cursor-pointer mt-5',
+    "w-full border-t   h-16 border-[#30363b] flex justify-between items-center p-4",
+  buyingPowerTitle: "text-white font-bolder text-lg",
+  buyingPowerAmount:
+    "text-white font-bolder text-xl flex flex-row items-center relative ",
+  notice: "flex border border-[#30363b] mx-11 my-4 p-5 flex-col flex-1",
+  noticeContainer: "flex-1",
+  noticeTitle: "text-gray-500",
+  noticeMessage: "text-white font-bold",
+  noticeCTA: "font-bold text-green-500 cursor-pointer mt-5",
   rightMain:
-    'flex flex-col flex-1 h-4/5 bg-[#1E2123] mt-6 rounded-lg overflow-y-scroll noScroll',
-  rightMainItem: 'flex items-center text-white p-5 border-b border-[#30363b]',
-  ItemTitle: 'flex-1 font-bold',
-  moreOptions: 'cursor-pointer text-xl',
-}
+    "flex flex-col flex-1 h-4/5 bg-[#1E2123] mt-6 rounded-lg overflow-y-scroll noScroll",
+  dropDownBets:
+    "absolute bg-[#1E2123] border-[#30363b] px-2 py-2 border rounded-xl top-7",
+  formButtons: "flex flex-row justify-between p-2",
+  button:
+    "rounded-lg py-2 px-16 text-[#ffffff] text-xs border-[#30363b] bg-[#1E2123] border ",
+  inputForm: "flex flex-row mt-4",
+  input:
+    "rounded-lg px-5 border-[#30363b] bg-[#1E2123] border mx-2 w-3/4 p-1 text-[#ffffff] focus:outline-none",
+  availableBetsContainer: "flex flex-col mt-4 border-t border-[#30363b] pt-2",
+  availableBetsTitle: "text-[#ffffff] font-bolder text-lg ",
+  availableBetsItem:
+    "flex flex-row justify-between items-center border-b border-[#30363b] pb-2",
+  currentStockPrice: "flex flex-col justify-center items-center",
+  currentStockPriceTitle: "text-[8px] text-[#ffffff] mt-4",
+  currentStockPriceAmount: "text-lg text-[#ffffff]",
+};
 
 export default function Home({ coins }) {
-  const [myCoins] = useState([{}, {}, {}, {}])
-  const { balance, swapError } = useContext(PredictionContext)
+  const [myCoins] = useState([{}, {}, {}, {}]);
+  const [showStockDropDown, setShowStockDropDown] = useState(false);
+  const [showAssetDropDown, setShowAssetDropDown] = useState(true);
+  const [showBetDropdown, setShowBetDropdown] = useState(false);
+  const [data, setData] = useState(STOCKDATA[0]);
+  const [high, setHigh] = useState(false);
+  const [sol, setSol] = useState('');
+  const [second, setSecond] = useState('');
+  const [selectedBet, setSelectedBet] = useState({});
+  const [showModal, setShowModal] = useState(false);
+  const [stockName, setStockName] = useState(STOCKDATA[0].name);
+  const [stockPrice, setStockPrice] = useState(STOCKDATA[0].price);
+  const [availableStock, setAvailableStock] = useState([]);
+  const [low, setLow] = useState(false);
+  const { balance, swapError } = useContext(PredictionContext);
 
+  const createStock = (e) => {
+
+    e.preventDefault();
+    if ((!high && !low) || !sol || !second) {
+      alert("Missing Fields");
+    } else {
+      let data = {
+        high: high,
+        low: low,
+        stockName: stockName,
+        stockPrice: stockPrice,
+        sol: sol,
+        second: second,
+        id: availableStock.length,
+      };
+      setAvailableStock((oldData) => {
+        return [...oldData, data];
+      });
+      setSecond('');
+    setSol('');
+    }
+    
+  };
+  console.log(sol,second)
   return (
     <div className={styles.wrapper}>
       <Header />
       <div className={styles.mainContainer}>
         <div className={styles.leftMain}>
           <div className={styles.portfolioAmountContainer}>
-            <div className={styles.portfolioAmount}>{balance}AMC</div>
+            <div className={styles.portfolioAmount}>
+              {balance}
+              {data.name}
+            </div>
             <div className={styles.portfolioPercent}>
               +0.0008(+0.57%)
               <span className={styles.pastHour}>Past Hour</span>
@@ -57,39 +114,122 @@ export default function Home({ coins }) {
           </div>
           <div>
             <div className={styles.chartContainer}>
-              <PortfolioChart />
+              <PortfolioChart data={data} />
             </div>
           </div>
           <div className={styles.buyingPowerContainer}>
             <div className={styles.buyingPowerTitle}>Bet On Stocks</div>
-            <div className={styles.buyingPowerAmount}>{balance} AMC</div>
+            <div
+              className={styles.buyingPowerAmount}
+              onClick={() => setShowBetDropdown(!showBetDropdown)}
+            >
+              {balance} {stockName} <IoMdArrowDropdown />
+              {showBetDropdown && (
+                <div className={styles.dropDownBets}>
+                  {STOCKDATA.map((data) => {
+                    return (
+                      <p
+                        key={data.name}
+                        onClick={() => {
+                          setStockName(data.name);
+                          setStockPrice(data.price);
+                        }}
+                      >
+                        {data.name}
+                      </p>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
+
+          <div className={styles.formButtons}>
+            <div
+              className={`${styles.button}${high && " bg-[#00ff1a]"}`}
+              onClick={() => {
+                setHigh(!high);
+                setLow(false);
+              }}
+            >
+              HIGH
+            </div>
+            <div
+            >
+            <p className="text-[#ffffff]">Current Stock Price: ${stockPrice}</p>  
+            </div>
+            <div
+              className={`${styles.button}${low && " bg-[#ef4b09]"}`}
+              onClick={() => {
+                setLow(!low);
+                setHigh(false);
+              }}
+            >
+              LOW
+            </div>
+          </div>
+          <form className="flex flex-col">
+            <div className={styles.inputForm}>
+              <input
+                className={styles.input}
+                placeholder={"SOL"}
+                type="number"
+                required
+                onChange={(e) => {
+                  setSol(e.target.value);
+                }}
+                value={sol}
+              />
+              <input
+                className={styles.input}
+                placeholder={"Seconds"}
+                type="number"
+                required
+                onChange={(e) => {
+                  setSecond(e.target.value);
+                }}
+                value={second}
+              />
+            </div>
+            <input
+              type="submit"
+              value="Submit"
+              className={`${
+                styles.button
+              }${" bg-[#ef4b09] w-1/4 text-center mt-8 self-center"}`}
+              onClick={createStock}
+            />
+          </form>
+          <AvailableBets
+            availableStock={availableStock}
+            setSelectedBet={setSelectedBet}
+            setShowModal={setShowModal}
+          />
         </div>
         <div className={styles.rightMain}>
-          <div className={styles.rightMainItem}>
-            <div className={styles.ItemTitle}>Stocks/Assets</div>
-
-            <BiDotsHorizontalRounded className={styles.moreOptions} />
-          </div>
-          <div className={styles.rightMainItem}>
-            <div className={styles.ItemTitle}>Crypto Currencies</div>
-
-            <BiDotsHorizontalRounded className={styles.moreOptions} />
-          </div>
-          {myCoins.map(coin => {
-            let price = parseFloat(coin.price)
-            price = price.toFixed(2)
-
-            return <Asset key={coin.uuid} coin={coin} price={price} />
-          })}
-
-          <div className={styles.rightMainItem}>
-            <div className={styles.ItemTitle}>Lists</div>
-            <AiOutlinePlus className={styles.moreOptions} />
-          </div>
+          <DropDown
+            data={STOCKDATA}
+            setData={setData}
+            showDropDown={showAssetDropDown}
+            setShowDropDown={setShowAssetDropDown}
+            title={"Stocks/Assets"}
+          />
+          <DropDown
+            data={CRYPTODATA}
+            setData={setData}
+            showDropDown={showStockDropDown}
+            setShowDropDown={setShowStockDropDown}
+            title={"Crypto Currencies"}
+          />
+          <DropDown title={"Lists"} />
         </div>
       </div>
+      <CustomModal
+        isOpen={showModal}
+        selectedBet={selectedBet}
+        setAvailableStock={setAvailableStock}
+        setShowModal={setShowModal}
+      />
     </div>
-  )
+  );
 }
-
