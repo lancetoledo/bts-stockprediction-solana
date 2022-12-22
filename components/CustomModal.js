@@ -49,7 +49,7 @@ export default function CustomModal({
             ...obj,
             high: high,
             low: low,
-            sol: sol,
+            sol: parseInt(sol) + parseInt(selectedBet.sol),
           };
         }
         return obj;
@@ -96,7 +96,7 @@ export default function CustomModal({
       </div>
       <form className="self-center flex flex-col justify-center items-center">
         <div className={styles.inputForm}>
-        <p className="text-[#ffffff]">Current Pot Amount</p>
+        <p className="text-[#ffffff]">Your Bet</p>
           <input
             className={styles.input}
             placeholder={"SOL"}

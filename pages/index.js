@@ -74,7 +74,6 @@ export default function Home({ coins }) {
   const { balance, swapError } = useContext(PredictionContext);
 
   const createStock = (e) => {
-
     e.preventDefault();
     if ((!high && !low) || !sol || !second) {
       alert("Missing Fields");
@@ -91,12 +90,29 @@ export default function Home({ coins }) {
       setAvailableStock((oldData) => {
         return [...oldData, data];
       });
+   let newStockInDropDown=   STOCKDATA.filter((data)=>{
+        let availableBetStockName=[...availableStock,{
+          high: high,
+          low: low,
+          stockName: stockName,
+          stockPrice: stockPrice,
+          sol: sol,
+          second: second,
+          id: availableStock.length,
+        }].map((item)=>item.stockName)
+        if(!availableBetStockName.includes(data.name)){
+          return data
+        }else{
+          return
+        }
+      })
+      setStockName(newStockInDropDown[0]?.name);
+      setStockPrice(newStockInDropDown[0]?.price);
       setSecond('');
     setSol('');
     }
     
   };
-  console.log(sol,second)
   return (
     <div className={styles.wrapper}>
       <Header />
@@ -126,7 +142,14 @@ export default function Home({ coins }) {
               {balance} {stockName} <IoMdArrowDropdown />
               {showBetDropdown && (
                 <div className={styles.dropDownBets}>
-                  {STOCKDATA.map((data) => {
+                  {STOCKDATA.filter((data)=>{
+                    let availableBetStockName=availableStock.map((item)=>item.stockName)
+                    if(!availableBetStockName.includes(data.name)){
+                      return data
+                    }else{
+                      return
+                    }
+                  }).map((data) => {
                     return (
                       <p
                         key={data.name}
@@ -193,6 +216,7 @@ export default function Home({ coins }) {
             </div>
             <input
               type="submit"
+              disabled={availableStock.length===STOCKDATA.length}
               value="Submit"
               className={`${
                 styles.button

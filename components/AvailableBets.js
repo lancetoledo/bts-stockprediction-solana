@@ -23,6 +23,7 @@ export default function AvailableBets({
       {availableStock.map((item) => {
         return (
           <div
+          key={item.stockName}
             className={styles.availableBetsItem}
             onClick={() => {
               setSelectedBet(item);
