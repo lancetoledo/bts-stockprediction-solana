@@ -70,7 +70,7 @@ export default function CustomModal({
     >
       <div className="flex flex-col justify-center items-center">
       <h1 className="text-[#ffffff] text-2xl">{selectedBet.stockName}</h1>
-      <p className="text-[#ffffff]">Length of Bet: {selectedBet.second}</p>
+      <p className="text-[#ffffff]">Length of Bet: {selectedBet.second} seconds</p>
       <p className="text-[#ffffff]">Current Pot: {selectedBet.sol}</p>
       </div>
      
