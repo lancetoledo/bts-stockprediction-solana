@@ -55,7 +55,11 @@ const styles = {
   currentStockPriceTitle: "text-[8px] text-[#ffffff] mt-4",
   currentStockPriceAmount: "text-lg text-[#ffffff]",
 };
-
+const timeTypes=[
+  "seconds",
+  "days",
+  "months"
+]
 export default function Home({ coins }) {
   const [myCoins] = useState([{}, {}, {}, {}]);
   const [showStockDropDown, setShowStockDropDown] = useState(false);
@@ -64,7 +68,9 @@ export default function Home({ coins }) {
   const [data, setData] = useState(STOCKDATA[0]);
   const [high, setHigh] = useState(false);
   const [sol, setSol] = useState('');
-  const [second, setSecond] = useState('');
+  const [time, setTime] = useState();
+  const [timeType, setTimeType] = useState(timeTypes[0]);
+  const [timeDropDown, setTimeTypeDropDown] = useState(false);
   const [selectedBet, setSelectedBet] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [stockName, setStockName] = useState(STOCKDATA[0].name);
@@ -75,7 +81,7 @@ export default function Home({ coins }) {
 
   const createStock = (e) => {
     e.preventDefault();
-    if ((!high && !low) || !sol || !second) {
+    if ((!high && !low) || !sol || !time) {
       alert("Missing Fields");
     } else {
       let data = {
@@ -84,7 +90,8 @@ export default function Home({ coins }) {
         stockName: stockName,
         stockPrice: stockPrice,
         sol: sol,
-        second: second,
+        time: time,
+        timeType: timeType,
         id: availableStock.length,
       };
       setAvailableStock((oldData) => {
@@ -97,7 +104,8 @@ export default function Home({ coins }) {
           stockName: stockName,
           stockPrice: stockPrice,
           sol: sol,
-          second: second,
+          time: time,
+          timeType: timeType,
           id: availableStock.length,
         }].map((item)=>item.stockName)
         if(!availableBetStockName.includes(data.name)){
@@ -108,7 +116,7 @@ export default function Home({ coins }) {
       })
       setStockName(newStockInDropDown[0]?.name);
       setStockPrice(newStockInDropDown[0]?.price);
-      setSecond('');
+      setTime('');
     setSol('');
     }
     
@@ -205,14 +213,36 @@ export default function Home({ coins }) {
               />
               <input
                 className={styles.input}
-                placeholder={"Seconds"}
+                placeholder={timeType}
                 type="number"
                 required
                 onChange={(e) => {
-                  setSecond(e.target.value);
+                  setTime(e.target.value);
                 }}
-                value={second}
+                value={time}
               />
+                      <div
+              className={styles.buyingPowerAmount}
+              onClick={() => setTimeTypeDropDown(!timeDropDown)}
+            >
+              {timeType} <IoMdArrowDropdown />
+              {timeDropDown && (
+                <div className={styles.dropDownBets}>
+                  {timeTypes.map((data) => {
+                    return (
+                      <p
+                        key={data.name}
+                        onClick={() => {
+                          setTimeType(data)
+                        }}
+                      >
+                        {data}
+                      </p>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
             </div>
             <input
               type="submit"
